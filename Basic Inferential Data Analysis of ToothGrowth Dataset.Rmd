@@ -1,0 +1,151 @@
+---
+title: "Basic Inferential Data Analysis of ToothGrowth Dataset"
+author: "Jeevithiesh Duggani"
+date: "07/05/2020"
+output: 
+    pdf_document:
+        toc: true
+        toc_depth: 3
+---
+```{r Set global Settings,eval=TRUE,results='hide',echo=FALSE}
+    options(scipen = 100)
+```
+
+## Abstract
+This project analyzes the `ToothGrowth` data in the R datasets package.
+
+The `aims` of the project are listed below :
+
+1. Load the `ToothGrowth` data and perform some `basic exploratory data analyses`.
+2. Provide a `basic summary` of the data.
+3. Use `confidence intervals` and/or `hypothesis tests` to compare `tooth growth` by **supp** and **dose**.
+4. State the `conclusions` and the `assumptions` needed for the **conclusions**.
+
+## Import the necessary packages and datasets
+The following packages are to be imported.
+
+* dataset
+* ggplot2
+```{r Import Packages,results='hide'}
+    library(datasets)
+    library(ggplot2)
+```
+
+Import the following datasets.
+
+* ToothGrowth
+```{r Import Datasets,results='hide'}
+    data("ToothGrowth")
+```
+
+Rename the values `OJ` as `Orange Juice` and `VC` as `Ascorbic Acid`.
+```{r Rename Values}
+    levels(ToothGrowth$supp) <- c("Orange Juice", "Ascorbic Acid")
+```
+
+## Run Basic Exploratory Data Analyses
+Check the `structure` of the dataset `ToothGrowth`.
+```{r Structure}
+    str(ToothGrowth)
+```
+
+supp consists of **2** `unique` values. Identify number of unique values in `len` and `dose`.
+```{r Identify unique values}
+    list(uniqLen  = length(unique(ToothGrowth$len)), 
+         uniqDose = length(unique(ToothGrowth$dose)))
+```
+
+Convert dose into a factor as it consists of only **3** unique values.
+```{r Dose as factor variable}
+    ToothGrowth$dose <- as.factor(ToothGrowth$dose)
+    str(ToothGrowth)
+```
+
+Plot a boxplot to visualize the `length of the teeth` based on the `supplement` and `dosage`.
+```{r Graph length vs dose}
+    graph <- ggplot(ToothGrowth, aes(dose,len))
+    graph <- graph + facet_grid(.~supp)
+    graph <- graph + geom_boxplot(aes(fill = supp), show.legend = FALSE)
+    graph <- graph + labs(title = "Tooth growth by Dosage for each Supplement", 
+                  y = "Length of the tooth", x = "Dosage (mg / day)")
+    graph
+```
+
+## Observations
+
+* It is observed that **both** `supplements` result in an **increase** in `growth` as the `dosage` is **increased**.
+* Both supplements result in the **same** `length` when the `dosage` is at `2 mg / day`.
+* `Orange Juice` is **more** `effective` at the **lower** `doses`.
+
+## Comparision of length of growth by supplement and dose
+Use `Confidence Intervals` and `Hypothesis Testing` for the comparision.
+
+### Hypothesis 1
+`Orange Juice` and `Ascorbic Acid` result in the same growth.
+```{r Testing Hypothesis 1}
+    test1 <- t.test(len ~ supp, data = ToothGrowth)
+    conf1 <- test1$conf.int
+    pval1 <- test1$p.value
+    test1
+```
+
+- The confidence interval is `r conf1` which contains the value `0`.
+- The P value is `r pval1` which is **greater** than `0.05`.
+
+> Therefore the null hypothesis cannot be rejected
+
+### Hypothesis 2
+`Orange Juice` and `Ascorbic Acid` result in the same growth at a dosage of 0.5 mg / day.
+```{r Testing Hypothesis 2}
+    test2 <- t.test(len ~ supp, data = ToothGrowth[ToothGrowth$dose == 0.5,])
+    conf2 <- test2$conf.int
+    pval2 <- test2$p.value
+    test2
+```
+
+- The confidence interval is `r conf1` which does not contains the value `0`.
+- The P value is `r pval1` which is **much lesser** than `0.05`.
+
+> Therefore the null hypothesis can be rejected. The alternative hypothesis "The supplement Orange Juice results in more tooth growth at a dosage of 0.5 mg / day" is accepted instead.
+
+### Hypothesis 3
+`Orange Juice` and `Ascorbic Acid` result in the same growth at a dosage of 1 mg / day.
+```{r Testing Hypothesis 3}
+    test3 <- t.test(len ~ supp, data = ToothGrowth[ToothGrowth$dose == 1,])
+    conf3 <- test3$conf.int
+    pval3 <- test3$p.value
+    test3
+```
+
+- The confidence interval is `r conf3` which does not contains the value `0`.
+- The P value is `r pval3` which is **much smaller** than `0.05`.
+
+> Therefore the null hypothesis can be rejected. The alternative hypothesis "The supplement Orange Juice results in more tooth growth at a dosage of 1 mg / day" is accepted instead.
+
+### Hypothesis 4
+`Orange Juice` and `Ascorbic Acid` result in the same growth at a dosage of 2 mg / day.
+```{r Testing Hypothesis 4}
+    test4 <- t.test(len ~ supp, data = ToothGrowth[ToothGrowth$dose == 2,])
+    conf4 <- test4$conf.int
+    pval4 <- test4$p.value
+    test4
+```
+
+- The confidence interval is `r conf4` which contains the value `0`.
+- The P value is `r pval4` which is **much greater** than `0.05`.
+
+> Therefore the null hypothesis cannot be rejected
+
+## Assumptions
+
+- `Normal Disibution` of the lengths of the tooth.
+- `No other measured factors` affects the length of the tooth.
+- For the `t tests` the variances of the two groups are different from one another.
+
+## Conclusions
+
+- `Orange Juice` results in more growth at the **lower** doses of `0.5 and 1 mg / day`.
+- `Orange Juice` and `Ascorbic Acid` results in the same growth at the **highest** doses of `2 mg / day`.
+- For the overall picture, We cannot conclude that `Orange Juice` is more effective than `Ascorbic Acid`.
+
+                                **End**
